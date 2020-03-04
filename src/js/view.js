@@ -44,7 +44,7 @@ var typeBranch = 0;
 var maxevo = 99999;
 var pathAlgorithm = "nogold";
 var inited = false;
-var runeSize = 6.0;
+var runeSize = 2.0;
 var defaultTypeBranch = {
     1: 11,
     2: 21,
@@ -265,13 +265,15 @@ var initGraph = function (id, savedata) {
 						type: 'canvas'
     				},
 					settings: {
-				        autoRescale: ["nodePosition", "nodeSize"],
+				        //autoRescale: ["nodePosition", "nodeSize"],
 				        adjustSizes: false,
+				        immutable: true, 
 				        fixed: true,
 				        defaultNodeType: 'circle', 
+				        edgeColor : 'target',
 				        defaultLabelAlignment : 'inside',
 				        labelSize : "proportional", 
-				        labelSizeRatio: 0.5, 
+				        labelSizeRatio: 0.75, 
 				        labelThreshold: 12,
 				}
 			});
@@ -282,10 +284,6 @@ var initGraph = function (id, savedata) {
 
 var initEventListener = function(){
 	s.bind("clickNode", function(e){
-	    /*if (e.node.dataId == 10000) {
-	        uncheckRuneWithConfirm(runeId);
-	    }else{*/
-	    console.log("clicked :", e);
 		switch(e.data.node.status) {
             case 0:
 			    console.log("case 0 : checkRune");
@@ -486,9 +484,9 @@ var checkRune = function (rune, noRecursion, isSaved) {
     }
 };
 
-var uncheckRuneWithConfirm = function (runeId) {
+var uncheckRuneWithConfirm = function (rune) {
     if (confirm(Ui.getText("confirmuncheck"))) {
-        uncheckRune(runeId);
+        uncheckRune(rune);
     }
 };
 var uncheckRune = function (rune, noRecursion) {
