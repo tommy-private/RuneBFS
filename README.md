@@ -1,33 +1,35 @@
-All rune data rights belong to XinDong. ©–{‰ÆREADME‚æ‚è
+All rune data rights belong to XinDong. â†æœ¬å®¶READMEã‚ˆã‚Š
 
----- ‚±‚±‚©‚ç----
+---- ã“ã“ã‹ã‚‰----
 
-# ƒ‰ƒOƒ}ƒX‚Ìƒ‹[ƒ“”ÕƒVƒ~ƒ…ƒŒ[ƒ^‚Å‚·BŠCŠO‚ÌRoMELDE‚³‚ñ‚Ì”h¶”Å‚Å‚·B
-- –{EPG‚Å‚Í‚È‚­OSSƒRƒ~ƒ…ƒjƒeƒB‚Ì‚¨ì–@‚à‚¿‚á‚ñ‚Æ‚í‚©‚Á‚Ä‚È‚¢‘fl‚È‚Ì‚ÅA–{‰Æ‚Ö‚Ìcommit‚Ís‚¢‚Ü‚¹‚ñB
-- –{‰Æ‚ÌƒhƒLƒ…ƒƒ“ƒg‚ª®‚Á‚Ä‚¢‚È‚¢‚Ì‚ÅAŠÂ‹«‚É‚Â‚¢‚Ä‚Í©•ª‚Å’²‚×‚Ä‚â‚Á‚Ä‚İ‚½ƒŒƒxƒ‹‚Ì‚à‚Ì‚Å‚·B
-  ¦‹³‚¦‚ÄˆÌ‚¢lc
+# ãƒ©ã‚°ãƒã‚¹ã®ãƒ«ãƒ¼ãƒ³ç›¤ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚¿ã§ã™ã€‚æµ·å¤–ã®RoMELDEã•ã‚“ã®æ´¾ç”Ÿç‰ˆã§ã™ã€‚
+- æœ¬è·PGã§ã¯ãªãOSSã‚³ãƒŸãƒ¥ãƒ‹ãƒ†ã‚£ã®ãŠä½œæ³•ã‚‚ã¡ã‚ƒã‚“ã¨ã‚ã‹ã£ã¦ãªã„ç´ äººãªã®ã§ã€æœ¬å®¶ã¸ã®commitã¯è¡Œã„ã¾ã›ã‚“ã€‚
+- æœ¬å®¶ã®ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆãŒæ•´ã£ã¦ã„ãªã„ã®ã§ã€ç’°å¢ƒã«ã¤ã„ã¦ã¯è‡ªåˆ†ã§èª¿ã¹ã¦ã‚„ã£ã¦ã¿ãŸãƒ¬ãƒ™ãƒ«ã®ã‚‚ã®ã§ã™ã€‚
+  â€»æ•™ãˆã¦å‰ã„äººâ€¦
 
 
-### ŠÂ‹«\’z
-- webpack ‚ğ—˜—p‚µ‚Ä‚¢‚Ü‚·BˆÈ‰º‚Ìƒc[ƒ‹ŒQ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ª•K—v‚Å‚·
+### ç’°å¢ƒæ§‹ç¯‰
+- webpack ã‚’åˆ©ç”¨ã—ã¦ã„ã¾ã™ã€‚ä»¥ä¸‹ã®ãƒ„ãƒ¼ãƒ«ç¾¤ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ãŒå¿…è¦ã§ã™
   - node.js
-  - yarn or npm (ˆÈ‰º‚Íyarn‚Å‰ğàj
+  - yarn or npm (ä»¥ä¸‹ã¯yarnã§è§£èª¬ï¼‰
   - webpack
   - webpack plugin
   	- html-webpack-plugin
   	- clean-webpack-plugin
   	- mini-css-extract-plugin
   	- offline-plugin
+  - sigma.js@1.2.1
   	
-- yarn‚©‚çwebpack ‚¨‚æ‚Ñƒvƒ‰ƒOƒCƒ“‚ÌƒCƒ“ƒXƒg[ƒ‹
+- yarnã‹ã‚‰webpack ãŠã‚ˆã³ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«
   - yarn add webpack --dev
   - yarn add webpack-cli --dev
   - yarn add html-webpack-plugin --dev
   - yarn add clean-webpack-plugin --dev
   - yarn add mini-css-extract-plugin --dev
   - yarn add offline-plugin --dev
+  - yarn add sigma-js@1.2.1
   
-- webpack ‚É‚æ‚éƒrƒ‹ƒhÀs
+- webpack ã«ã‚ˆã‚‹ãƒ“ãƒ«ãƒ‰å®Ÿè¡Œ
   - yarn run build
   
   
