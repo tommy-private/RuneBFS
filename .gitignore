@@ -3,8 +3,8 @@
 .idea/*
 *.map
 
-# docs/* are auto-generated files
-docs/*
+# docs/ are auto-generated files
+docs/
 
 # Logs
 logs
@@ -67,3 +67,5 @@ typings/
 
 # next.js build output
 .next
+
+yarn.lock
