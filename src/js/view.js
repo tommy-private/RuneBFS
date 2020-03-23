@@ -29,13 +29,17 @@ import IMG_RUNE_ON_3 from '../img/Rune_On_3.png';
 import IMG_RUNE_ON_4 from '../img/Rune_On_4.png';
 import IMG_RUNE_ON_5 from '../img/Rune_On_5.png';
 import IMG_RUNE_ON_6 from '../img/Rune_On_6.png';
+
+var ua = navigator.userAgent;
+var IS_MOBILE; 
+var displayImage;
 // IMG_RUNE[status][type]
 var IMG_RUNE = [["", IMG_RUNE_OFF_1, IMG_RUNE_OFF_2, IMG_RUNE_OFF_3, IMG_RUNE_OFF_4, IMG_RUNE_OFF_5, IMG_RUNE_OFF_6],
                 ["", IMG_RUNE_SEL_1, IMG_RUNE_SEL_2, IMG_RUNE_SEL_3, IMG_RUNE_SEL_4, IMG_RUNE_SEL_5, IMG_RUNE_SEL_6],
                 ["", IMG_RUNE_ON_1, IMG_RUNE_ON_2, IMG_RUNE_ON_3, IMG_RUNE_ON_4, IMG_RUNE_ON_5, IMG_RUNE_ON_6]];
-var NODE_COLOR = [["","#333333","#333333","#333333","#333333","#333333","#666666"], 
-				  ["", "#0ed9d6", "#0ed9d6", "#0ed9d6", "#0ed9d6", "#0ed9d6", "#0ed9d6"],
-				  ["", "#e36956", "#3a85ed", "#c6a701", "#379f1e", "#d08349", "#ae56ed"]];
+var NODE_COLOR = [["#666666","#333333","#333333","#333333","#333333","#666666","#666666"], 
+				  ["#0ed9d6", "#0ed9d6", "#0ed9d6", "#0ed9d6", "#0ed9d6", "#0ed9d6", "#0ed9d6"],
+				  ["#d08349", "#e36956", "#3a85ed", "#c6a701", "#379f1e", "#d08349", "#ae56ed"]];
 
 var activeMenu = "";
 var runeList = [];
@@ -44,7 +48,9 @@ var typeBranch = 0;
 var maxevo = 99999;
 var pathAlgorithm = "nogold";
 var inited = false;
-var runeSize = 2.0;
+var runeSize;
+var labelThreshold;
+var labelSizeRatio;
 var defaultTypeBranch = {
     1: 11,
     2: 21,
@@ -87,10 +93,36 @@ var init = function (id, savedata, server) {
         Data.setCurrentServer(server);
         location.reload();
     }
+    
+    if(ua.indexOf('iPhone') > 0 || ua.indexOf('iPod') > 0 || ua.indexOf('Android') > 0 && ua.indexOf('Mobile') > 0){ // smartphone
+	    IS_MOBILE = 1;
+	}else if(ua.indexOf('iPad') > 0 || ua.indexOf('Android') > 0){ // tablet
+	    IS_MOBILE = 1;
+	}else{
+	    IS_MOBILE = 0;
+	}
+	displayImage = (IS_MOBILE)? 0 : 1;
+	runeSize = (IS_MOBILE)? 2 : 5; 
+	labelThreshold = (IS_MOBILE)? 4 : 8;
+	labelSizeRatio = (IS_MOBILE)? 2 : 1;
+    
     clear();
     initControl();
-    initGraph(id, savedata);
+    initGraph(id);
+    
+    if (savedata) {
+        runeList = parseCondition(savedata);
+    }
+    _.each(runeList, function (o, i) {
+        checkRune(s.graph.nodes("rune" + o), true, true);
+    });
+    _.each(runeCheckList, function (o, i) {
+        checkRune(s.graph.nodes("rune" + o)	, true, false);
+    });
+    renderCost();
+    updateGraph();
     initEventListener();
+    initTxtSearch(id);
 };
 var clear = function () {
     runeList = [];
@@ -116,24 +148,18 @@ var initControl = function () {
 
     $('#btnSearch').click(function () {
         var text = $('#txtSearch').val();
-        //$('.rune[data-name*="' + text + '"]').popover('show');
-        var list = $('.rune[data-name="' + text + '"]').not('.rune-not-available');
-        list.popover('show');
-        if (list.length) {
-            var top = 9999999;
-            list.each(function (i, o) {
-                top = Math.min(top, parseFloat($(o).css('top')));
-            });
-            $('#main').animate({
-                scrollTop: Math.max(top - 50, 0)
-            }, 500);
-        }
-        else {
-            alert(Ui.getText('Rune not exist'));
-        }
+        _.each(s.graph.nodes(), function(o, i){
+			if(o.status != 3 && o.label && o.label.startsWith(text)){
+				o.color = "#ff0f4b";
+			}
+        });
+        s.refresh();
     });
     $('#btnClear').click(function () {
-        $('[data-toggle="popover"]').popover('hide');
+        _.each(s.graph.nodes(), function(o, i){
+			o.color =  NODE_COLOR[o.status][o.runetype];
+        });
+        s.refresh();
     });
 
     $('#btnSelectAll').click(function () {
@@ -141,7 +167,6 @@ var initControl = function () {
         _.each(astrolabe, function (o, i) {
             checkRune(o.Id, true, false);
         });
-        //renderCost();
 		updateGraph();
     });
 
@@ -190,16 +215,55 @@ var initControl = function () {
     inited = true;
 };
 
-var updateGraph = function(){
-	_.each(s.graph.nodes(), function(rune, i) {
-        rune.color = NODE_COLOR[rune.status][rune.runetype];
-	    rune.image.url = IMG_RUNE[rune.status][rune.runetype];
+var initTxtSearch = function(typeBranch){
+	var category = [];
+    $('#txtSearch').empty();
+    _.each(Data.getAllRuneDescNameByTypeBranch(typeBranch), function (o, i) {
+    	var str = o.replace(/[Ⅰ-Ⅸ]/g, '');
+    	category = _.union(category, [str]);
 	});
+	console.log(category);
+	_.each(category, function(o, i){
+        $('#txtSearch').append($('<option>').text(o));
+    });
+    $('.selectpicker').selectpicker('refresh');
+}
+
+var updateGraph = function(){
+	if(displayImage){
+		_.each(s.graph.nodes(), function(rune, i) {
+	        rune.color = NODE_COLOR[rune.status][rune.runetype];
+		    rune.image = {
+				            url: IMG_RUNE[rune.status][rune.runetype], 
+				            scale: 1.5
+				         }; 
+		});
+	}else{
+		_.each(s.graph.nodes(), function(rune, i) {
+			rune.image = null;
+	        rune.color = NODE_COLOR[rune.status][rune.runetype];
+		});
+	}
+	renderCost();
 	s.refresh();
 };
 
-var initGraph = function (id, savedata) {
-    console.log("initGraph", id, savedata);
+var updateByZoom = function(delta){
+	// delta > 0 でZoom In, delta < 0 でZoom Out
+	// camera.ratioは小さいほど拡大
+	if(!IS_MOBILE){
+		if(s.cameras[0].ratio <= 0.25 && delta > 0){
+			displayImage = 1;
+			updateGraph();
+		}else if(s.cameras[0].ratio >= 0.13 && delta < 0){
+			displayImage = 0;
+			updateGraph();
+		}
+	}
+};
+
+var initGraph = function (id) {
+    console.log("initGraph", id);
     if(s) s.kill();
     var self = this;
     if (id == 0) {
@@ -221,19 +285,21 @@ var initGraph = function (id, savedata) {
         var desc = Data.getRuneDesc(o.Id, typeBranch);
         var rune = {
             id: "rune" + o.Id,
-            x: o.X,
-            y: -1 * o.Y ,
+            x: o.X * 5,
+            y: -1 * o.Y * 5,
             size: runeSize,
             image: {
 	            url: IMG_RUNE[0][desc.Type],
-	            scale: 1.3
+	            scale: 1.5
 	        },
             dataid: o.Id,
             rune: o,
             cost: cost,
+            resetCost: resetCost, 
+            desc: desc, 
             label: desc.Name, //desc.Desc,
             runetype: desc.Type,
-            status: 0,   //0:unchecked,1:checked,2:saved
+            status: 0,   //0:unchecked,1:checked,2:saved,3:disabled
         };
         if (o.Id == 10000) {
             //set default rune as saved
@@ -265,21 +331,27 @@ var initGraph = function (id, savedata) {
 						type: 'canvas'
     				},
 					settings: {
-				        //autoRescale: ["nodePosition", "nodeSize"],
-				        adjustSizes: false,
+				        autoRescale: ["nodePosition", "nodeSize"],
+				        adjustSizes: true,
 				        immutable: true, 
 				        fixed: true,
 				        defaultNodeType: 'circle', 
+				        maxNodeSize: runeSize,
+				        minEdgeSize: 3,
+				        maxEdgeSize: 3,
 				        edgeColor : 'target',
+				        labelColor: 'node',
+						nodeHoverColor : 'defalut',
+						defaultNodeHoverColor : '#f5ff70',
+						hoverFontStyle : 'font-size: 200%;',
 				        defaultLabelAlignment : 'inside',
 				        labelSize : "proportional", 
-				        labelSizeRatio: 0.75, 
-				        labelThreshold: 12,
+				        labelSizeRatio: labelSizeRatio, 
+				        labelThreshold: labelThreshold,
 				}
 			});
     CustomShapes.init(s);
     s.cameras[0].goTo({ x: 0, y: 50, angle: 0, ratio: 0.25 });
-    updateGraph();	
 };
 
 var initEventListener = function(){
@@ -300,28 +372,20 @@ var initEventListener = function(){
          }
 		updateGraph();
 	});
+	$('.sigma-mouse')
+    // I destroy and create new Sigma instances on the same page on the go, so I unbind events first
+    .unbind('mousewheel DOMMouseScroll')
+
+    // Rebind events
+    // Note: use jQuery $.throttle plugin to prevent excessing firing
+    .bind('mousewheel DOMMouseScroll', function(e){  // # $.throttle(500, function(e) {
+        // Example callback
+        // updateByZoom()の後でデフォルトのマウスホイール処理が走るので、実際のズーム値変更はupdateByZoom()の後になる。
+        // よってマウス移動の上下をとって、基準値からどちらに動いたかで処理する必要がある
+        var delta = e.originalEvent.deltaY ? -(e.originalEvent.deltaY) : e.originalEvent.wheelDelta ? e.originalEvent.wheelDelta : -(e.originalEvent.detail);
+        updateByZoom(delta);
+    });   // );
 };
-
-
-	/*
-
-    $('#txtSearch').empty();
-    _.each(Data.getAllRuneDescNameByTypeBranch(typeBranch), function (o, i) {
-        $('#txtSearch').append($('<option>').text(o).val(o));
-    });
-    $('.selectpicker').selectpicker('refresh');
-
-    if (savedata) {
-        runeList = parseCondition(savedata);
-    }
-    _.each(, function (o, i) {
-        checkRune(o, true, true);
-    });
-    _.each(runeCheckList, function (o, i) {
-        checkRune(o, true, false);
-    });
-    renderCost();
-    */
 
 var renderCost = function () {
     var runeCost = [];
@@ -331,26 +395,21 @@ var renderCost = function () {
 
     var runeTotalAttr = [];
     var runeCheckTotalAttr = [];
-    $(".rune").each(function (i, o) {
-        var $rune = $(o);
-        var runeData = $rune.data("rune");
-        var desc = $rune.data("desc");
-        var status = $rune.data('status');
-        var cost = $rune.data('cost');
-        var resetCost = $rune.data('resetCost');
-        switch (status) {
+    _.each(s.graph.nodes(), function(rune, i) {
+        // var runeData = $rune.data("rune");
+        switch (rune.status) {
             case 0:
                 break;
             case 1: {
-                runeCheckCost.push(cost);
-                runeCheckResetCost.push(resetCost);
-                runeCheckTotalAttr.push(desc);
+                runeCheckCost.push(rune.cost);
+                runeCheckResetCost.push(rune.resetCost);
+                runeCheckTotalAttr.push(rune.desc);
                 break;
             }
             case 2: {
-                runeCost.push(cost);
-                runeResetCost.push(resetCost);
-                runeTotalAttr.push(desc);
+                runeCost.push(rune.cost);
+                runeResetCost.push(rune.resetCost);
+                runeTotalAttr.push(rune.desc);
                 break;
             }
             default:
@@ -482,6 +541,7 @@ var checkRune = function (rune, noRecursion, isSaved) {
             runeCheckList.push(runeId);
         }
     }
+    renderCost();
 };
 
 var uncheckRuneWithConfirm = function (rune) {
@@ -509,6 +569,7 @@ var uncheckRune = function (rune, noRecursion) {
         });
     }
     runeList = _.union(runeList, [10000]);
+    renderCost();
 };
 
 var save = function () {
@@ -518,7 +579,6 @@ var save = function () {
         var rune = s.graph.nodes("rune" + o);
         rune.status = 2;
     });
-    // renderCost();
     updateGraph();
 
     var data = stringifyCondition(runeList);
